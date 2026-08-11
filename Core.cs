@@ -1,5 +1,8 @@
-﻿using Alta.Intelligence;
+﻿using Alta.Chunks;
+using Alta.Intelligence;
 using Alta.Networking;
+using Alta.Networking.Servers;
+using Alta.StatSystem;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
@@ -9,14 +12,13 @@ using UnityEngine;
 
 namespace NiceDeathFerns
 {
-    [HarmonyPatch(typeof(NetworkPrefab), "Initialize")]
     public class InitializePatch
     {
-        static void Postfix(NetworkPrefab __instance)
+        internal static void Postfix(NetworkPrefab __instance)
         {
-            if (__instance.Hash == 37642u // this is Death Fern
-                || __instance.Hash == 24402u // this is Vine Attack Fern
-                // || __instance.Hash == 65004u // this is Mother Fern
+            if ((__instance.Hash == 37642u && Core.melonPrefEntry_DestroyDeathFerns.Value)
+                || (__instance.Hash == 24402u && Core.melonPrefEntry_DestroyVineAttackFerns.Value)
+                || (__instance.Hash == 65004u && Core.melonPrefEntry_DestroyMotherFerns.Value)
                 )
             {
                 GameObject.Destroy(__instance.gameObject);
@@ -26,9 +28,26 @@ namespace NiceDeathFerns
 
     public class Core : MelonMod
     {
+        private MelonPreferences_Category melonPrefCategory;
+        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyDeathFerns;
+        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyVineAttackFerns;
+        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyMotherFerns;
+
         public override void OnInitializeMelon()
         {
             LoggerInstance.Msg("Initialized.");
+
+            melonPrefCategory = MelonPreferences.CreateCategory("NiceDeathFerns");
+            melonPrefEntry_DestroyDeathFerns = melonPrefCategory.CreateEntry<bool>("DestroyDeathFerns", true);
+            melonPrefEntry_DestroyVineAttackFerns = melonPrefCategory.CreateEntry<bool>("DestroyVineAttackFerns", true);
+            melonPrefEntry_DestroyMotherFerns = melonPrefCategory.CreateEntry<bool>("DestroyMotherFerns", false);
+
+            ServerHandler.Initialized += ServerInitialized;
+        }
+
+        private void ServerInitialized(ServerHandler serverHandler)
+        {
+            HarmonyInstance.Patch(AccessTools.Method(typeof(NetworkPrefab), "Initialize"), postfix: new HarmonyMethod(typeof(InitializePatch), nameof(InitializePatch.Postfix)));
         }
     }
 }
