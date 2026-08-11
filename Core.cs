@@ -1,10 +1,12 @@
 ﻿using Alta.Chunks;
 using Alta.Intelligence;
+using Alta.Mechanisms;
 using Alta.Networking;
 using Alta.Networking.Servers;
 using Alta.StatSystem;
 using HarmonyLib;
 using MelonLoader;
+using System.Text;
 using UnityEngine;
 
 [assembly: MelonInfo(typeof(NiceDeathFerns.Core), "NiceDeathFerns", "1.0.0", "CGNik", null)]
@@ -16,10 +18,14 @@ namespace NiceDeathFerns
     {
         internal static void Postfix(NetworkPrefab __instance)
         {
-            if ((__instance.Hash == 37642u && Core.melonPrefEntry_DestroyDeathFerns.Value)
-                || (__instance.Hash == 24402u && Core.melonPrefEntry_DestroyVineAttackFerns.Value)
-                || (__instance.Hash == 65004u && Core.melonPrefEntry_DestroyMotherFerns.Value)
-                )
+            System.Random rng = new();
+            float random = rng.NextFloat();
+            if
+            (
+                (__instance.Hash == 37642u && random <= Core.melonPrefEntry_DestroyDeathFernChance.Value)
+                || (__instance.Hash == 24402u && random <= Core.melonPrefEntry_DestroyVineAttackFernChance.Value)
+                || (__instance.Hash == 65004u && random <= Core.melonPrefEntry_DestroyMotherFernChance.Value)
+            )
             {
                 GameObject.Destroy(__instance.gameObject);
             }
@@ -29,18 +35,19 @@ namespace NiceDeathFerns
     public class Core : MelonMod
     {
         private MelonPreferences_Category melonPrefCategory;
-        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyDeathFerns;
-        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyVineAttackFerns;
-        internal static MelonPreferences_Entry<bool> melonPrefEntry_DestroyMotherFerns;
+        internal static MelonPreferences_Entry<float> melonPrefEntry_DestroyDeathFernChance;
+        internal static MelonPreferences_Entry<float> melonPrefEntry_DestroyVineAttackFernChance;
+        internal static MelonPreferences_Entry<float> melonPrefEntry_DestroyMotherFernChance;
 
         public override void OnInitializeMelon()
         {
             LoggerInstance.Msg("Initialized.");
 
             melonPrefCategory = MelonPreferences.CreateCategory("NiceDeathFerns");
-            melonPrefEntry_DestroyDeathFerns = melonPrefCategory.CreateEntry<bool>("DestroyDeathFerns", true);
-            melonPrefEntry_DestroyVineAttackFerns = melonPrefCategory.CreateEntry<bool>("DestroyVineAttackFerns", true);
-            melonPrefEntry_DestroyMotherFerns = melonPrefCategory.CreateEntry<bool>("DestroyMotherFerns", false);
+            melonPrefEntry_DestroyDeathFernChance = melonPrefCategory.CreateEntry<float>("DestroyDeathFernChance", 0.95f);
+            melonPrefEntry_DestroyVineAttackFernChance = melonPrefCategory.CreateEntry<float>("DestroyVineAttackFernChance", 0.95f);
+            melonPrefEntry_DestroyMotherFernChance = melonPrefCategory.CreateEntry<float>("DestroyMotherFernChance", 0f);
+            MelonPreferences.Save();
 
             ServerHandler.Initialized += ServerInitialized;
         }
