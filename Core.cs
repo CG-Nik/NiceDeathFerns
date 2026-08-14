@@ -38,6 +38,7 @@ namespace NiceDeathFerns
             melonPrefEntry_DestroyDeathFerns = melonPrefCategory.CreateEntry<bool>("DestroyDeathFerns", true);
             melonPrefEntry_DestroyVineAttackFerns = melonPrefCategory.CreateEntry<bool>("DestroyVineAttackFerns", true);
             melonPrefEntry_DestroyMotherFerns = melonPrefCategory.CreateEntry<bool>("DestroyMotherFerns", false);
+            MelonPreferences.Save();
 
             ServerHandler.Initialized += ServerInitialized;
         }
