@@ -13,12 +13,14 @@ namespace NiceDeathFerns
     {
         internal static void Postfix(NetworkPrefab __instance)
         {
-            if ((__instance.Hash == 37642u && Core.melonPrefEntry_DestroyDeathFerns.Value)
+            if
+            (
+                (__instance.Hash == 37642u && Core.melonPrefEntry_DestroyDeathFerns.Value)
                 || (__instance.Hash == 24402u && Core.melonPrefEntry_DestroyVineAttackFerns.Value)
                 || (__instance.Hash == 65004u && Core.melonPrefEntry_DestroyMotherFerns.Value)
-                )
+            )
             {
-                GameObject.Destroy(__instance.gameObject);
+                __instance.Entity.SceneDestroy();
             }
         }
     }
